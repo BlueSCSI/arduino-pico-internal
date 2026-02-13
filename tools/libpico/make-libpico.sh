@@ -4,9 +4,13 @@ set -e # Exit on error
 set -x
 
 export PICO_SDK_PATH="$(cd ../../pico-sdk/; pwd)"
-export PATH="$(cd ../../system/arm-none-eabi/bin; pwd):$PATH"
-export PATH="$(cd ../../system/riscv32-unknown-elf/bin; pwd):$PATH"
-export PATH="$(cd ../../system/picotool; pwd):$PATH"
+# Use system toolchains if available (e.g. nix shell), fall back to bundled
+if ! command -v arm-none-eabi-gcc &>/dev/null; then
+    export PATH="$(cd ../../system/arm-none-eabi/bin; pwd):$PATH"
+fi
+if ! command -v picotool &>/dev/null && [ -d ../../system/picotool ]; then
+    export PATH="$(cd ../../system/picotool; pwd):$PATH"
+fi
 
 rm -rf build-rp2040
 mkdir build-rp2040
@@ -63,8 +67,12 @@ CPU=rp2350 cmake ..
 make -j
 
 cd ..
-rm -rf build-rp2350-riscv
-mkdir build-rp2350-riscv
-cd build-rp2350-riscv
-CPU=rp2350-riscv cmake ..
-make -j
+if command -v riscv32-unknown-elf-gcc &>/dev/null; then
+    rm -rf build-rp2350-riscv
+    mkdir build-rp2350-riscv
+    cd build-rp2350-riscv
+    CPU=rp2350-riscv cmake ..
+    make -j
+else
+    echo "Skipping rp2350-riscv build (riscv32-unknown-elf-gcc not found)"
+fi
