@@ -4,6 +4,7 @@
 [submodule "pico-sdk"]
 	path = pico-sdk
 	url = https://github.com/BlueSCSI/pico-sdk-internal.git
+	branch = v2.2.1
 [submodule "system/pyserial"]
 	path = tools/pyserial
 	url = https://github.com/pyserial/pyserial.git
